@@ -1,13 +1,13 @@
-function rc = rcrit(sig,nu)
+function rc = rcrit(nu,sig)
 
-% function rc = rcrit(sig,nu)
+% function rc = rcrit(nu,sig)
 % ---------------------------
 % Critical r (correlation coefficient), given significance level
 % and degrees of freedom.
 %
 % INPUTS:
-% sig - significance level (default 0.05)
 % nu - degrees of freedom (N-2)
+% sig - significance level (default 0.05)
 % 
 % OUTPUT:
 % rcrit - critical r value
@@ -20,7 +20,7 @@ function rc = rcrit(sig,nu)
 
 % set default significance level
 if nargin == 1
-    sig = 0.05
+    sig = 0.05;
 end
 
 % critical t value
