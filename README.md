@@ -13,3 +13,7 @@ nanFuncs: functions for interpolating over NaN values
 ocean: oceanography-specific functions
 
 stats: functions related to statistics
+
+obs: observation-specific functions
+
+obs/NDBC: download data from National Data Buoy Center (NDBC)
