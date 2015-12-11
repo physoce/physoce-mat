@@ -68,7 +68,12 @@ if isempty(years)==0
     if max(years)>=2007
         full_url=sprintf('%sfilename=%sh%d.txt.gz&%s',...
            base_url,stationID, max(years),data_dir{1});
-       d=webread(full_url); % This gives us a single string with all the data
+       try
+        d=webread(full_url); % This gives us a single string with all the data
+       catch
+           fprintf('Data is not available for %d',max(years));
+           return
+       end
        d=strsplit(d,'\n'); % now we have it split by line in a cell array
        l1=strsplit(d{1},'\s*','DelimiterType','RegularExpression'); % getting the first line (variables)
        l2=strsplit(d{2},'\s*','DelimiterType','RegularExpression'); % getting second line (sometimes variable units
@@ -94,10 +99,28 @@ if isempty(years)==0
        end
     else full_url=sprintf('%sfilename=%dh%d.txt.gz&%s',...
            base_url,stationID, max(years),data_dir{1});
-       d=webread(full_url); % This gives us a single string with all the data
+       try
+        d=webread(full_url); % This gives us a single string with all the data
+       catch
+           fprintf('Data is not available for %d',max(years));
+           return
+       end
        d=strsplit(d,'\n'); % now we have it split by line in a cell array
        header=strsplit(d{1},'\s*','DelimiterType','RegularExpression');
-       for j = 6:length(header)
+       % we need to find out where the date/time values end so we know
+       % where our variables of interest begin.
+       varstart = find(strcmp(header,'ss'));
+       if isempty(varstart) == 1
+           varstart = find(strcmp(l1,'mm'));
+           if isempty(varstart)== 1
+               varstart=find(strcmp(l1,'hh'));
+                if isempty(varstart)== 1
+                    varstart=find(strcmp(l1,'DD')); 
+                end
+           end
+       end
+       varstart=varstart+1;
+       for j = varstart:length(header)
           buoystruct(header{j}).data=[]; % creating empty fields
        end
     end
