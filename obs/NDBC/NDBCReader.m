@@ -52,6 +52,11 @@ data_dir{2} = 'dir=data/stdmet/'; %monthly directory.  The 3 letter month
 monthAbv={'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov' ...
     'Dec'};
 buoystruct(1).time=[]; % creating our first buoy structure field
+%-------------------------------------------------------------------------
+% Minor tweak to deal with the fact we want to accept both strings and
+% numbers as station IDs (NOAA buoys usually use numbers while shore
+% stations may have alphabetic characters).
+%-------------------------------------------------------------------------
 % We need to convert our stationID into characters if it is numeric
 if isnumeric(stationID) == 1
    stationID=num2str(stationID);
