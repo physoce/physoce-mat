@@ -52,11 +52,6 @@ data_dir{2} = 'dir=data/stdmet/'; %monthly directory.  The 3 letter month
 monthAbv={'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov' ...
     'Dec'};
 buoystruct(1).time=[]; % creating our first buoy structure field
-%-------------------------------------------------------------------------
-% Minor tweak to deal with the fact we want to accept both strings and
-% numbers as station IDs (NOAA buoys usually use numbers while shore
-% stations may have alphabetic characters).
-%-------------------------------------------------------------------------
 % We need to convert our stationID into characters if it is numeric
 if isnumeric(stationID) == 1
    stationID=num2str(stationID);
@@ -209,12 +204,16 @@ if isempty(months)==0
        full_url=sprintf('%sfilename=%s%d%d.txt.gz&%s%s/',...
            base_url,stationID,months(i),year(date) ,data_dir{2},monthAbv{i});
        %disp(full_url) <- this produces working urls!
-        d=webread(full_url); % This gives us a single string with all the data
-        if strcmp(d,'Unable to access')
+       try
+            d=webread(full_url); % This gives us a single string with all the data
+            if strcmp(d,'Unable to access')
+               NoDataMonths=vertcat(NoDataMonths, months(i));
+               continue
+           end
+       catch
            NoDataMonths=vertcat(NoDataMonths, months(i));
-           continue
+               continue
        end
-        
         ts=NDBCHeaderFormat(d);
         strFormat = '';
         for k = 1:length(ts)
