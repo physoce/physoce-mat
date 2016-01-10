@@ -2,8 +2,7 @@ function [ buoystruct ] = NDBCReader(stationID,years,months)
 %NDBCReader fetches standard meteorologica data from the NDBC data archives
 %for a specific buoy and and time frame specified
 %   INPUTS
-%       stationID - the buoy station number that identifies this NDBC buoy.
-%                   This should  be a 5 digit number
+%       stationID - the buoy station name or number.
 %       years - this should be a vector of the year values for which the
 %               user wants to collect data (eg, [2009, 2010, 2011, 2012].
 %               Once a year's data is complete NDBC stores it as a single 
@@ -53,6 +52,12 @@ data_dir{2} = 'dir=data/stdmet/'; %monthly directory.  The 3 letter month
 monthAbv={'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov' ...
     'Dec'};
 buoystruct(1).time=[]; % creating our first buoy structure field
+% We need to convert our stationID into characters if it is numeric
+if isnumeric(stationID) == 1
+   stationID=num2str(stationID);
+else
+   stationID=lower(stationID); %NDBC uses lower case characters in their file names.
+end
 %--------------------------------------------------------------------------
 % Getting annual data summaries
 %--------------------------------------------------------------------------
@@ -61,13 +66,31 @@ if isempty(years)==0
     % Determining how best generate our buoy data fields and appending the
     % units, if we have them.
     if max(years)>=2007
-        full_url=sprintf('%sfilename=%dh%d.txt.gz&%s',...
-           base_url,stationID, 2007,data_dir{1});
-       d=webread(full_url); % This gives us a single string with all the data
+        full_url=sprintf('%sfilename=%sh%d.txt.gz&%s',...
+           base_url,stationID, max(years),data_dir{1});
+       try
+        d=webread(full_url); % This gives us a single string with all the data
+       catch
+           fprintf('Data is not available for %d',max(years));
+           return
+       end
        d=strsplit(d,'\n'); % now we have it split by line in a cell array
        l1=strsplit(d{1},'\s*','DelimiterType','RegularExpression'); % getting the first line (variables)
        l2=strsplit(d{2},'\s*','DelimiterType','RegularExpression'); % getting second line (sometimes variable units
-       for j = 6:length(l2)
+       % we need to find out where the date/time values end so we know
+       % where our variables of interest begin.
+       varstart = find(strcmp(l1,'ss'));
+       if isempty(varstart) == 1
+           varstart = find(strcmp(l1,'mm'));
+           if isempty(varstart)== 1
+               varstart=find(strcmp(l1,'hh'));
+                if isempty(varstart)== 1
+                    varstart=find(strcmp(l1,'DD')); 
+                end
+           end
+       end
+       varstart = varstart+1; % varstart is currently set to the last date/time field so we increment by 1
+       for j = varstart:length(l2)
            buoystruct.(l1{j}).units=l2{j}; % assigning the variable names as fields
                                                 % (except time which we will convert) to our structure
                                                 % and appending the units
@@ -76,10 +99,28 @@ if isempty(years)==0
        end
     else full_url=sprintf('%sfilename=%dh%d.txt.gz&%s',...
            base_url,stationID, max(years),data_dir{1});
-       d=webread(full_url); % This gives us a single string with all the data
+       try
+        d=webread(full_url); % This gives us a single string with all the data
+       catch
+           fprintf('Data is not available for %d',max(years));
+           return
+       end
        d=strsplit(d,'\n'); % now we have it split by line in a cell array
        header=strsplit(d{1},'\s*','DelimiterType','RegularExpression');
-       for j = 6:length(header)
+       % we need to find out where the date/time values end so we know
+       % where our variables of interest begin.
+       varstart = find(strcmp(header,'ss'));
+       if isempty(varstart) == 1
+           varstart = find(strcmp(l1,'mm'));
+           if isempty(varstart)== 1
+               varstart=find(strcmp(l1,'hh'));
+                if isempty(varstart)== 1
+                    varstart=find(strcmp(l1,'DD')); 
+                end
+           end
+       end
+       varstart=varstart+1;
+       for j = varstart:length(header)
           buoystruct(header{j}).data=[]; % creating empty fields
        end
     end
@@ -91,14 +132,20 @@ if isempty(years)==0
         else              % include the units for each of their variables.
             hl=1;
         end
-       full_url=sprintf('%sfilename=%dh%d.txt.gz&%s',...
+       full_url=sprintf('%sfilename=%sh%d.txt.gz&%s',...
            base_url,stationID, years(i),data_dir{1});
        %disp(full_url) <- this produces working urls!
-       d=webread(full_url); % This gives us a single string with all the data
-       if strcmp(d,'Unable to access')
+       try 
+        d=webread(full_url); % This gives us a single string with all the data
+        if strcmp(d,'Unable to access')
+           NoDataYears=vertcat(NoDataYears, years(i));
+           continue
+        end
+       catch
            NoDataYears=vertcat(NoDataYears, years(i));
            continue
        end
+       
        % The function below will split the text up into a cell array of
        % vectors for each of the specified formats.  First we make sure we
        % associate all the variable names with the right data vectors!
@@ -139,7 +186,7 @@ end
 %--------------------------------------------------------------------------
 if isempty(months)==0
     if isempty(buoystruct)==1
-       full_url=sprintf('%sfilename=%d%d%d.txt.gz&%s%s/',...
+       full_url=sprintf('%sfilename=%s%d%d.txt.gz&%s%s/',...
            base_url,stationID,months(1),year(date) ,data_dir{2},monthAbv{1});
        d=webread(full_url); % This gives us a single string with all the data
        d=strsplit(d,'\n'); % now we have it split by line in a cell array
@@ -154,15 +201,19 @@ if isempty(months)==0
     end
     for i = 1:length(months)
         
-       full_url=sprintf('%sfilename=%d%d%d.txt.gz&%s%s/',...
+       full_url=sprintf('%sfilename=%s%d%d.txt.gz&%s%s/',...
            base_url,stationID,months(i),year(date) ,data_dir{2},monthAbv{i});
        %disp(full_url) <- this produces working urls!
-        d=webread(full_url); % This gives us a single string with all the data
-        if strcmp(d,'Unable to access')
+       try
+            d=webread(full_url); % This gives us a single string with all the data
+            if strcmp(d,'Unable to access')
+               NoDataMonths=vertcat(NoDataMonths, months(i));
+               continue
+           end
+       catch
            NoDataMonths=vertcat(NoDataMonths, months(i));
-           continue
+               continue
        end
-        
         ts=NDBCHeaderFormat(d);
         strFormat = '';
         for k = 1:length(ts)
@@ -216,6 +267,21 @@ for j = 2:length(fnames)
         bd(bd==bdflag)=NaN;
     end
     buoystruct.(fnames{j}).data=bd;
+end
+%--------------------------------------------------------------------------
+% REMOVING INVALID DATA FIELDS
+%--------------------------------------------------------------------------
+% In an effort to make the lives of researhers easier, NDBC puts out .txt
+% files that have the same data fields, even if the buoy does not have the
+% instruments to measure those parameters.  These fields will be full of
+% bad data flags and thanks to the snippet above, our structure fields will
+% be entirely NaNs.  Let's just remove these now so we don't have to bother
+% with them.
+
+for j=2:length(fnames)
+   if length(buoystruct.(fnames{j}).data) == sum(isnan(buoystruct.(fnames{j}).data))
+       buoystruct = rmfield(buoystruct,fnames{j});
+   end
 end
 %--------------------------------------------------------------------------
 % Letting the user know what data was not available
