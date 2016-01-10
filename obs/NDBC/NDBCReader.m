@@ -1,4 +1,5 @@
 function [ buoystruct ] = NDBCReader(stationID,years,months)
+%buoystruct = NDBCReader(stationID,years,months)
 %NDBCReader fetches standard meteorologica data from the NDBC data archives
 %for a specific buoy and and time frame specified
 %   INPUTS
@@ -11,7 +12,17 @@ function [ buoystruct ] = NDBCReader(stationID,years,months)
 %       months     - this should be a NUMERICAL vector of months OF THE 
 %       (optional)   CURRENT YEAR for which the user wants standard 
 %                    meterological data.  Enter nothing, or an empty array,  
-%                    if no monthly data is desired.               .
+%                    if no monthly data is desired.               
+% 
+%    OUTPUT 
+%       buoystruct - a structure containing datetime, data and units
+%       buoystruct.time - Matlab datetime
+%       buoystruct.VARIABLE.units - string with information about units
+%       buoystruct.VARIABLE.data - numeric data
+%       (where VARIABLE is a standard NDBC variable such as ATMP)
+%      
+%       All variables with valid data are returned in buoystruct.
+%
 %       IF BOTH YEARS AND MONTHS ARE PROVIDED IT WILL RETURN TOTAL YEAR
 %       DATA FOR YEARS SPECIFICED AS WELL AS MONTHLY DATA FOR CURRENT YEAR
 % Created by C. Ryan Manzer - Moss Landing Marine Labs 10.8.2015
