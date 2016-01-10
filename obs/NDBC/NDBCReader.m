@@ -8,14 +8,18 @@ function [ buoystruct ] = NDBCReader(stationID,years,months)
 %               Once a year's data is complete NDBC stores it as a single 
 %               .txt file. Enter an empty array if no yearly data is
 %               desired.
-%       months - this should be a NUMERICAL vector of months OF THE 
-%                CURRENT YEAR for which the user wants standard 
-%                meterological data.  Enter an empty array if no monthly 
-%                data is desired.
+%       months     - this should be a NUMERICAL vector of months OF THE 
+%       (optional)   CURRENT YEAR for which the user wants standard 
+%                    meterological data.  Enter nothing, or an empty array,  
+%                    if no monthly data is desired.               .
 %       IF BOTH YEARS AND MONTHS ARE PROVIDED IT WILL RETURN TOTAL YEAR
 %       DATA FOR YEARS SPECIFICED AS WELL AS MONTHLY DATA FOR CURRENT YEAR
 % Created by C. Ryan Manzer - Moss Landing Marine Labs 10.8.2015
 %--------------------------------------------------------------------------
+
+if nargin < 3
+    months = [];
+end
 
 % First we check to make sure we have what we need to be successful
 neededFiles = {};
