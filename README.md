@@ -11,3 +11,11 @@ A repository for Matlab functions, oceanography-related and general use.
 - stats: functions related to statistics
 - obs: observation-specific functions
   - obs/NDBC: download data from National Data Buoy Center (NDBC)
+  
+## INSTALLATION ###
+  
+To clone the project on your local machine:
+  
+```
+git clone git@gitlab.com:physoce/physoce-mat.git
+```
