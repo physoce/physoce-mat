@@ -40,6 +40,9 @@ end
 if exist('NDBCHeaderFormat.m','file')~=2
     neededFiles=vertcat(neededFiles,{'NDBCHeaderFormat.m'});
 end
+if exist('NDBCStationData.m','file')~=2
+    neededFIles=vertca(neededFiles,{'NDBCStationData.m'});
+end
 if isempty(neededFiles)==0
     disp(['NDBCReader depends on the following functions.  ' ...
         'These functions are either not installed or not in your path.  ' ...
@@ -73,6 +76,16 @@ if isnumeric(stationID) == 1
 else
    stationID=lower(stationID); %NDBC uses lower case characters in their file names.
 end
+%--------------------------------------------------------------------------
+% Getting Station Data
+%--------------------------------------------------------------------------
+% It would lkely be very useful for various users to know the details about
+% the particular NDBC station being queried.  The below function takes in
+% the url (which we will build) for the NDBC station page and extracts the
+% station data from the HTML text.
+stationurl=['http://www.ndbc.noa.gov/station_page.php?station=' stationID];
+stationData=NDBCStationData(stationurl);
+buoystruct.station_data=stationData;
 %--------------------------------------------------------------------------
 % Getting annual data summaries
 %--------------------------------------------------------------------------
