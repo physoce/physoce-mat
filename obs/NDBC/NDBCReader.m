@@ -41,7 +41,7 @@ if exist('NDBCHeaderFormat.m','file')~=2
     neededFiles=vertcat(neededFiles,{'NDBCHeaderFormat.m'});
 end
 if exist('NDBCStationData.m','file')~=2
-    neededFIles=vertca(neededFiles,{'NDBCStationData.m'});
+    neededFiles=vertca(neededFiles,{'NDBCStationData.m'});
 end
 if isempty(neededFiles)==0
     disp(['NDBCReader depends on the following functions.  ' ...
