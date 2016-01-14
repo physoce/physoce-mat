@@ -1,4 +1,5 @@
 function [ buoystruct ] = NDBCReader(stationID,years,months)
+%buoystruct = NDBCReader(stationID,years,months)
 %NDBCReader fetches standard meteorologica data from the NDBC data archives
 %for a specific buoy and and time frame specified
 %   INPUTS
@@ -8,14 +9,28 @@ function [ buoystruct ] = NDBCReader(stationID,years,months)
 %               Once a year's data is complete NDBC stores it as a single 
 %               .txt file. Enter an empty array if no yearly data is
 %               desired.
-%       months - this should be a NUMERICAL vector of months OF THE 
-%                CURRENT YEAR for which the user wants standard 
-%                meterological data.  Enter an empty array if no monthly 
-%                data is desired.
+%       months     - this should be a NUMERICAL vector of months OF THE 
+%       (optional)   CURRENT YEAR for which the user wants standard 
+%                    meterological data.  Enter nothing, or an empty array,  
+%                    if no monthly data is desired.               
+% 
+%    OUTPUT 
+%       buoystruct - a structure containing datetime, data and units
+%       buoystruct.time - Matlab datetime
+%       buoystruct.VARIABLE.units - string with information about units
+%       buoystruct.VARIABLE.data - numeric data
+%       (where VARIABLE is a standard NDBC variable such as ATMP)
+%      
+%       All variables with valid data are returned in buoystruct.
+%
 %       IF BOTH YEARS AND MONTHS ARE PROVIDED IT WILL RETURN TOTAL YEAR
 %       DATA FOR YEARS SPECIFICED AS WELL AS MONTHLY DATA FOR CURRENT YEAR
 % Created by C. Ryan Manzer - Moss Landing Marine Labs 10.8.2015
 %--------------------------------------------------------------------------
+
+if nargin < 3
+    months = [];
+end
 
 % First we check to make sure we have what we need to be successful
 neededFiles = {};
@@ -24,6 +39,9 @@ if exist('NDBCNames.m','file')~=2
 end
 if exist('NDBCHeaderFormat.m','file')~=2
     neededFiles=vertcat(neededFiles,{'NDBCHeaderFormat.m'});
+end
+if exist('NDBCStationData.m','file')~=2
+    neededFiles=vertca(neededFiles,{'NDBCStationData.m'});
 end
 if isempty(neededFiles)==0
     disp(['NDBCReader depends on the following functions.  ' ...
@@ -58,6 +76,16 @@ if isnumeric(stationID) == 1
 else
    stationID=lower(stationID); %NDBC uses lower case characters in their file names.
 end
+%--------------------------------------------------------------------------
+% Getting Station Data
+%--------------------------------------------------------------------------
+% It would lkely be very useful for various users to know the details about
+% the particular NDBC station being queried.  The below function takes in
+% the url (which we will build) for the NDBC station page and extracts the
+% station data from the HTML text.
+stationurl=['http://www.ndbc.noa.gov/station_page.php?station=' stationID];
+stationData=NDBCStationData(stationurl);
+buoystruct.station_data=stationData;
 %--------------------------------------------------------------------------
 % Getting annual data summaries
 %--------------------------------------------------------------------------
