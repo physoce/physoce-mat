@@ -8,4 +8,5 @@ be relatively easy to modify.
 
 **NDBCReader   The stationID field can now be characters which should allow users to enter 
 	       non buoy station identifiers.  Also I've added code that removes fields 
-	       where all the data present are bad data flags.  
+	       where all the data present are bad data flags.  Station Data (location, water
+	       depth, etc.) will also be collected and included in the structure output.
