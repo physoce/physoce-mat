@@ -27,4 +27,4 @@ end
 t = tinv(1 - sig/2,nu);
 
 % critical r value
-rc = t/sqrt(t^2+nu);
+rc = t/sqrt(t.^2+nu);

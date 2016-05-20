@@ -18,7 +18,7 @@ function p = rsig(r,nu)
 % Tom Connolly (tconnolly@mlml.calstate.edu)
 
 % t value
-t = r*sqrt(nu)/sqrt(1-r^2);
+t = abs(r)*sqrt(nu)/sqrt(1-r.^2);
 
 % significance level
 p = 2*(1-tcdf(t,nu));
